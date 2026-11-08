@@ -1,7 +1,7 @@
 "use server";
 import { redirect } from "next/navigation";
 import { createClient, runAdminBootstrap } from "@/lib/supabase/server";
-import { publicEnv } from "@/lib/env";
+import { requestOrigin } from "@/lib/origin";
 
 export type AuthState = { error?: string; info?: string };
 
@@ -34,7 +34,7 @@ export async function signUpWithPassword(_: AuthState, form: FormData): Promise<
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({
     ...c,
-    options: { emailRedirectTo: `${publicEnv.siteUrl()}/auth/confirm` },
+    options: { emailRedirectTo: `${await requestOrigin()}/auth/confirm` },
   });
   if (error) return { error: error.message.includes("rate limit")
     ? "Too many attempts. Please wait a few minutes and try again."
@@ -46,7 +46,7 @@ export async function signInWithGoogle(): Promise<void> {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
-    options: { redirectTo: `${publicEnv.siteUrl()}/auth/callback` },
+    options: { redirectTo: `${await requestOrigin()}/auth/callback` },
   });
   if (error || !data.url) redirect("/sign-in?error=google");
   redirect(data.url);
