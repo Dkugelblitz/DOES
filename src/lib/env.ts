@@ -10,7 +10,8 @@ export const publicEnv = {
   supabaseUrl: () => required("NEXT_PUBLIC_SUPABASE_URL", process.env.NEXT_PUBLIC_SUPABASE_URL),
   supabasePublishableKey: () =>
     required("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY),
-  siteUrl: () => process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  // Trailing slashes are stripped so "https://x.netlify.app/" doesn't produce "//auth/callback".
+  siteUrl: () => (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").trim().replace(/\/+$/, ""),
 };
 
 /** Parse ADMIN_EMAILS ("a@x.com, b@y.com") into a normalised list. */
