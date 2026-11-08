@@ -7,6 +7,10 @@
 [build.environment]
   NODE_VERSION = "22"
   NEXT_TELEMETRY_DISABLED = "1"
+  # Netlify fails the build if an env var's value appears in the output. NEXT_PUBLIC_* values
+  # are public by design (Next.js inlines them into browser JavaScript), so skip only those.
+  # Server-only secrets (SUPABASE_SECRET_KEY, ADMIN_EMAILS) stay scanned.
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,NEXT_PUBLIC_SITE_URL"
 
 # Each production deploy costs credits on the free plan, so production only builds from `main`.
 # Branch deploys and Deploy Previews are free: develop on other branches, merge to `main` to release.
