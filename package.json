@@ -1,0 +1,41 @@
+{
+  "name": "deos",
+  "version": "1.0.0",
+  "description": "Data Engineering Operating System",
+  "scripts": {
+    "seed:build": "node scripts/build-seed.mjs",
+    "seed:validate": "node scripts/validate-seed.mjs",
+    "seed:report": "node scripts/review-report.mjs",
+    "test": "node --test --test-concurrency=1 tests/*.test.mjs tests/db/*.test.mjs",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "db:seed": "node --env-file-if-exists=.env.local scripts/seed-db.mjs",
+    "test:content": "node --test tests/*.test.mjs",
+    "test:db": "node --test --test-concurrency=1 tests/db/*.test.mjs",
+    "db:migrate": "node --env-file-if-exists=.env.local scripts/migrate.mjs",
+    "db:setup": "npm run db:migrate && npm run db:seed"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.119.0",
+    "ajv": "^8.20.0",
+    "next": "^16.4.5",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "server-only": "^0.0.1",
+    "yaml": "^2.9.1"
+  },
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "pg": "^8.23.1",
+    "typescript": "^7.0.2"
+  }
+}

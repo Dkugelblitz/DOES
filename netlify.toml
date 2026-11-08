@@ -1,0 +1,12 @@
+# Netlify build settings. Next.js is handled by Netlify's OpenNext adapter automatically
+# (SSR, server actions and src/proxy.ts, which runs as an Edge Function).
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NEXT_TELEMETRY_DISABLED = "1"
+
+# Each production deploy costs credits on the free plan, so production only builds from `main`.
+# Branch deploys and Deploy Previews are free: develop on other branches, merge to `main` to release.
