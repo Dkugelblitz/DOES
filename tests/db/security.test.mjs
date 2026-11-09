@@ -53,9 +53,9 @@ describe("sign-up and onboarding", () => {
     const ALLOWED_AUTH = ["private.active_uid", "private.card_level", "private.held_levels", "private.is_admin", "private.max_level",
       "private.sprint_item_visible", "private.subtopic_visible", "private.topic_shared", "private.topic_visible",
       "public.admin_analytics", "public.admin_bulk_grant", "public.admin_content", "public.admin_decide_request", "public.admin_restore_version", "public.admin_save_card", "public.admin_save_design", "public.admin_save_document", "public.admin_save_topic", "public.admin_delete_invite", "public.admin_grant_level",
-      "public.admin_import_users", "public.admin_list_users", "public.admin_overview", "public.admin_revoke_level",
-      "public.admin_set_active_level", "public.admin_set_admin", "public.admin_set_disabled", "public.admin_user_detail",
-      "public.cancel_level_request", "public.complete_onboarding", "public.create_custom_topic", "public.delete_custom_topic", "public.heartbeat_study_session", "public.level_summary", "public.mark_revised", "public.my_access", "public.my_game", "public.my_invite", "public.my_next_topic",
+      "public.admin_import_users", "public.admin_join_policy", "public.admin_list_users", "public.admin_overview", "public.admin_revoke_level",
+      "public.admin_set_active_level", "public.admin_set_admin", "public.admin_set_disabled", "public.admin_set_join_policy", "public.admin_user_detail",
+      "public.cancel_level_request", "public.complete_onboarding", "public.create_custom_topic", "public.delete_custom_topic", "public.heartbeat_study_session", "public.level_summary", "public.mark_revised", "public.my_access", "public.my_game", "public.my_invite", "public.my_join_status", "public.my_next_topic",
       "public.my_insights", "public.my_topic_flags", "public.pareto_topics", "public.request_level", "public.revision_due", "public.save_note", "public.set_active_level", "public.set_card_mastered", "public.set_sprint_item",
       "public.set_subtopic_done", "public.set_topic_status", "public.start_study_session", "public.stop_study_session", "public.study_state", "public.touch_activity"];
     const rows = await q1(db, `select n.nspname || '.' || p.proname f,

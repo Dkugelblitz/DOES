@@ -32,6 +32,10 @@ Setup from zero, on free tiers only: **[docs/SETUP.md](docs/SETUP.md)**.
 
 Admins edit everything learners see under **Admin → Content**: topics (name, module, minimum level, Pareto flags, subtopics, archive), flip cards, system designs, and the HackerRank guide, messages, gamification rules, settings, design framework and sprint intro. Every save is checked, versioned (any version can be restored, which adds a new version) and written to the audit log. Learners see changes immediately; no deploy is needed. The 2-day sprint plan's blocks are the one exception: they're still edited in `content/sprint.yaml` and loaded with `npm run db:seed -- --mode=force`.
 
+## Who can join
+
+**Admin → Access** switches between **Open** (anyone signing in with Google) and **Invite-only**. In invite-only mode, new people get in only if they were invited (Admin → Import), their email is on an allowed domain, or an admin approves their access request (Admin → Requests, tagged "new person"). Everyone else sees a waiting page. The check is in the database (`complete_onboarding`), so it can't be skipped, and changes are audited. Existing members are never affected.
+
 ## Rate limits
 
 Admin actions, timer actions, notes, revisions, level requests and custom topics are rate-limited in the database. Sign-in is Google only and rate-limited by Supabase Auth itself (Authentication → Rate Limits).

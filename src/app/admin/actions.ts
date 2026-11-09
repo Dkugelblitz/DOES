@@ -24,7 +24,7 @@ function fail(message: string): ActionResult {
   if (message.includes("admin only")) return { error: "You no longer have admin access." };
   if (message.includes("reauth required")) return { error: "For your security, sign in again to confirm this change.", reauth: true };
   // Messages raised by our own database functions are written for people; anything else is generic.
-  const known = /(level|admin|account|request|invite|expiry|user|rows|email|wait|already)/i;
+  const known = /(level|admin|account|request|invite|expiry|user|rows|email|wait|already|domain|mode)/i;
   return { error: known.test(message) && message.length < 160 ? message.charAt(0).toUpperCase() + message.slice(1) + "." : "Something went wrong. Please try again." };
 }
 
@@ -105,4 +105,15 @@ export async function deleteInvite(_: ActionResult, form: FormData): Promise<Act
   const email = String(form.get("email") ?? "").trim();
   if (!email.includes("@")) return { error: "Invalid request." };
   return run("admin_delete_invite", { p_email: email }, "Invite removed.", ["/admin/import"]);
+}
+
+export async function setJoinPolicy(_: ActionResult, form: FormData): Promise<ActionResult> {
+  const mode = String(form.get("mode") ?? "");
+  if (!["open", "invite_only"].includes(mode)) return { error: "Choose Open or Invite-only." };
+  const domains = String(form.get("domains") ?? "").split(/[\s,;]+/).map((d) => d.trim()).filter(Boolean).slice(0, 60);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_set_join_policy", { p_mode: mode, p_domains: domains });
+  if (error) return fail(error.message);
+  revalidatePath("/admin/access");
+  return { ok: mode === "open" ? "Saved. Anyone can join." : "Saved. DEOS is now invite-only." };
 }

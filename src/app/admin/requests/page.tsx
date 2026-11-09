@@ -16,7 +16,7 @@ export default async function AdminRequests() {
     supabase.from("levels").select("level, name"),
   ]);
   const ids = [...new Set([...(pending ?? []), ...(recent ?? [])].map((r) => r.user_id))];
-  const { data: people } = ids.length ? await supabase.from("profiles").select("id, email, display_name").in("id", ids) : { data: [] };
+  const { data: people } = ids.length ? await supabase.from("profiles").select("id, email, display_name, onboarded_at").in("id", ids) : { data: [] };
   const who = (uid: string) => people?.find((p) => p.id === uid);
   const name = (n: number) => levels?.find((l) => l.level === n)?.name ?? `Level ${n}`;
 
@@ -29,7 +29,7 @@ export default async function AdminRequests() {
           <section key={r.id} className="card">
             <p style={{ marginTop: 0 }}>
               <Link href={`/admin/users/${r.user_id}`}><strong>{p?.display_name || p?.email}</strong></Link>
-              <span className="muted"> ({p?.email})</span> asked for <strong>{name(r.requested_level)}</strong>
+              <span className="muted"> ({p?.email})</span>{!p?.onboarded_at && <span className="tag core" style={{ marginLeft: 6 }}>new person</span>} asked {p?.onboarded_at ? "for" : "to join with"} <strong>{name(r.requested_level)}</strong>
               <span className="muted"> · {ago(r.created_at)}</span>
             </p>
             {r.note && <blockquote className="quote">{r.note}</blockquote>}

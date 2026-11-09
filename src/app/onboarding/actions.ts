@@ -14,6 +14,7 @@ export async function completeOnboarding(_: OnboardingState, form: FormData): Pr
   const { error } = await supabase.rpc("complete_onboarding", { p_level: level, p_timezone: timezone, p_display_name: name });
   if (error) {
     if (error.message.includes("already onboarded")) redirect("/");
+    if (error.message.includes("invite only")) redirect("/onboarding");
     if (error.message.includes("timezone")) {
       const retry = await supabase.rpc("complete_onboarding", { p_level: level, p_timezone: "UTC", p_display_name: name });
       if (!retry.error) redirect("/");

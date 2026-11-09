@@ -47,6 +47,8 @@ describe("non-admins are refused on every admin function", () => {
       ["select public.admin_import_users('[{\"email\":\"x@example.com\",\"levels\":[3]}]'::jsonb)", []],
       ["select public.admin_delete_invite('x@example.com')", []],
       ["select public.admin_analytics()", []],
+      ["select public.admin_join_policy()", []],
+      ["select public.admin_set_join_policy('open', '{}')", []],
       ["select public.admin_content('topics', null)", []],
       ["select public.admin_save_topic('{\"id\":\"databricks/acid\",\"name\":\"Hacked\"}'::jsonb)", []],
       ["select public.admin_save_card('{\"deck\":\"x\",\"question\":\"q\",\"answer\":\"a\",\"topic_id\":\"databricks/acid\"}'::jsonb)", []],

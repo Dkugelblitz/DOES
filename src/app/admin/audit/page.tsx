@@ -10,7 +10,7 @@ const LABEL: Record<string, string> = {
   bootstrap_admin: "Made admin (ADMIN_EMAILS)", grant_level: "Granted level", revoke_level: "Revoked level", change_grant_expiry: "Changed expiry",
   set_active_level: "Set default level", promote_admin: "Promoted to admin", demote_admin: "Removed admin", disable_user: "Disabled account",
   enable_user: "Enabled account", approve_request: "Approved request", deny_request: "Denied request", import_invite: "Imported invite", delete_invite: "Deleted invite",
-  content_edit: "Edited content", content_restore: "Restored content version",
+  content_edit: "Edited content", content_restore: "Restored content version", set_join_policy: "Changed who can join",
 };
 
 const compact = (v: unknown) => {

@@ -15,6 +15,7 @@ export async function requestLevel(_: Result, form: FormData): Promise<Result> {
     return { error: /already|too many/.test(m) ? m.charAt(0).toUpperCase() + m.slice(1) + "." : "Couldn't send your request. Please try again." };
   }
   revalidatePath("/account");
+  revalidatePath("/onboarding");
   return { ok: "Request sent. An admin will review it, and you'll see the answer here." };
 }
 
