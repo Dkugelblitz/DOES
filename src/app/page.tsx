@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Nav } from "@/components/Nav";
 import { LevelSwitch } from "@/components/LevelSwitch";
+import { StudyTimer } from "@/components/StudyTimer";
+import type { StudyState } from "@/app/study/actions";
 
 type Summary = {
   level: number; topics: number; pareto: number; subtopics: number; cards: number; designs: number; sprint_items: number;
@@ -15,10 +17,11 @@ export default async function Home() {
   const access = await requireOnboarded();
   const supabase = await createClient();
   await supabase.rpc("touch_activity");
-  const [{ data: levels }, { data: profile }, { count: unread }] = await Promise.all([
+  const [{ data: levels }, { data: profile }, { count: unread }, { data: study }] = await Promise.all([
     supabase.from("levels").select("level, name, icon").order("level"),
     supabase.from("profiles").select("display_name").eq("id", access.user_id).single(),
     supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", access.user_id).is("read_at", null),
+    supabase.rpc("study_state"),
   ]);
   const held = (levels ?? []).filter((l) => access.levels.includes(l.level));
   const active = held.find((l) => l.level === access.active_level) ?? held[0];
@@ -40,6 +43,7 @@ export default async function Home() {
         <LevelSwitch held={held} active={active?.level ?? 1} />
         <div className="row"><Link className="btn primary" href="/roadmap">Open your roadmap</Link><Link className="btn" href="/pareto">⚡ Pareto core</Link><Link className="btn" href="/sprint/plan">2-day sprint</Link></div>
       </div>
+      {study && <StudyTimer initial={study as StudyState} />}
       {s && (
         <>
           <h2>{active?.name} roadmap</h2>

@@ -55,14 +55,14 @@ describe("sign-up and onboarding", () => {
       "public.admin_bulk_grant", "public.admin_decide_request", "public.admin_delete_invite", "public.admin_grant_level",
       "public.admin_import_users", "public.admin_list_users", "public.admin_overview", "public.admin_revoke_level",
       "public.admin_set_active_level", "public.admin_set_admin", "public.admin_set_disabled", "public.admin_user_detail",
-      "public.cancel_level_request", "public.complete_onboarding", "public.level_summary", "public.my_access", "public.my_invite",
-      "public.my_topic_flags", "public.pareto_topics", "public.request_level", "public.set_active_level", "public.set_card_mastered", "public.set_sprint_item",
-      "public.set_subtopic_done", "public.set_topic_status", "public.touch_activity"];
+      "public.cancel_level_request", "public.complete_onboarding", "public.heartbeat_study_session", "public.level_summary", "public.my_access", "public.my_invite",
+      "public.my_insights", "public.my_topic_flags", "public.pareto_topics", "public.request_level", "public.set_active_level", "public.set_card_mastered", "public.set_sprint_item",
+      "public.set_subtopic_done", "public.set_topic_status", "public.start_study_session", "public.stop_study_session", "public.study_state", "public.touch_activity"];
     const rows = await q1(db, `select n.nspname || '.' || p.proname f,
         has_function_privilege('anon', p.oid, 'execute') anon, has_function_privilege('authenticated', p.oid, 'execute') auth
       from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname in ('public', 'private') order by 1`);
     assert.deepEqual(rows.filter(r => r.anon).map(r => r.f), [], "anon can execute nothing");
-    assert.deepEqual(rows.filter(r => r.auth).map(r => r.f), ALLOWED_AUTH);
+    assert.deepEqual(rows.filter(r => r.auth).map(r => r.f).sort(), [...ALLOWED_AUTH].sort());
     const u = await createUser(db, "forger@example.com");
     await denied(as(db, u, d => d.query("select private.audit(null, 'forged', null, null, null, null, null)")));
   });

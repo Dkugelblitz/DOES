@@ -10,6 +10,7 @@ Interview prep for Data Engineer, Principal Data Engineer and Data Architect lev
 - **Milestone 3 (admin console): done.** User list and detail, grant and revoke levels with expiry, level requests, bulk grant, CSV import with invites, promote and demote with re-sign-in and a last-admin guard, disable accounts, and the audit log.
 - **Milestone 4 (roadmap and progress): done.** Domains, modules and topics for the active level, subtopic checklists that drive status, readiness overall and per domain, and the ETA and on-pace plan.
 - **Milestone 5 (Pareto and sprint): done.** A Pareto tab per held level with its own progress, and the 2-day sprint: time-blocked plan with checklists, flip cards with mastery, system designs with the answer framework, and the HackerRank AI guide, all filtered by level.
+- **Milestone 6 (study tracking): done.** Server-timed study sessions with start, pause and finish, heartbeats that save closed tabs and skip idle time, a 240-minute rollover, and an Insights page: last 7 days, time of day, averages and topics covered.
 
 Setup from zero, on free tiers only: **[docs/SETUP.md](docs/SETUP.md)**.
 
