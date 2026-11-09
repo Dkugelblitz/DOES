@@ -2,7 +2,7 @@
 import { useActionState, useState } from "react";
 import { signInWithGoogle, signInWithPassword, signUpWithPassword, type AuthState } from "@/app/auth/actions";
 
-export function SignInForm({ initialError }: { initialError?: string }) {
+export function SignInForm({ initialError, next = "/" }: { initialError?: string; next?: string }) {
   const [mode, setMode] = useState<"in" | "up">("in");
   const [inState, signIn, signingIn] = useActionState<AuthState, FormData>(signInWithPassword, {});
   const [upState, signUp, signingUp] = useActionState<AuthState, FormData>(signUpWithPassword, {});
@@ -13,12 +13,14 @@ export function SignInForm({ initialError }: { initialError?: string }) {
   return (
     <div className="stack">
       <form action={signInWithGoogle}>
+        <input type="hidden" name="next" value={next} />
         <button className="btn" type="submit" style={{ width: "100%" }}>
           <span aria-hidden="true">G</span> Continue with Google
         </button>
       </form>
       <div className="divider">or use email</div>
       <form action={mode === "in" ? signIn : signUp} className="stack" noValidate>
+        <input type="hidden" name="next" value={next} />
         <label>
           Email
           <input name="email" type="email" autoComplete="email" required />

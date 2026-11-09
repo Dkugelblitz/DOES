@@ -7,6 +7,7 @@ Interview prep for Data Engineer, Principal Data Engineer and Data Architect lev
 - **Milestone 1 (seed extraction): done.**
 - **Milestone 2 (schema, security and auth): done.** Google and email sign-in, one-level onboarding, `ADMIN_EMAILS` bootstrap, the full schema with row-level security, and level-gated content.
 
+- **Milestone 3 (admin console): done.** User list and detail, grant and revoke levels with expiry, level requests, bulk grant, CSV import with invites, promote and demote with re-sign-in and a last-admin guard, disable accounts, and the audit log.
 - **Milestone 4 (roadmap and progress): done.** Domains, modules and topics for the active level, subtopic checklists that drive status, readiness overall and per domain, and the ETA and on-pace plan.
 
 Setup from zero, on free tiers only: **[docs/SETUP.md](docs/SETUP.md)**.

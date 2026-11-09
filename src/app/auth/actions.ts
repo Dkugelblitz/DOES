@@ -1,7 +1,9 @@
 "use server";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { createClient, runAdminBootstrap } from "@/lib/supabase/server";
 import { requestOrigin } from "@/lib/origin";
+import { NEXT_COOKIE, safeNext } from "@/lib/next-path";
 
 export type AuthState = { error?: string; info?: string };
 
@@ -25,7 +27,7 @@ export async function signInWithPassword(_: AuthState, form: FormData): Promise<
     ? "Please confirm your email first. Check your inbox for the link."
     : "That email and password don't match." };
   await runAdminBootstrap();
-  redirect("/");
+  redirect(safeNext(form.get("next")));
 }
 
 export async function signUpWithPassword(_: AuthState, form: FormData): Promise<AuthState> {
@@ -42,7 +44,11 @@ export async function signUpWithPassword(_: AuthState, form: FormData): Promise<
   return { info: "Check your inbox to confirm your email, then sign in." };
 }
 
-export async function signInWithGoogle(): Promise<void> {
+export async function signInWithGoogle(form: FormData): Promise<void> {
+  // Remember where to return after Google, without adding query strings to the
+  // redirect URL (Supabase's allow-list matches it exactly).
+  const next = safeNext(form.get("next"));
+  (await cookies()).set(NEXT_COOKIE, next, { httpOnly: true, sameSite: "lax", secure: true, path: "/", maxAge: 600 });
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
@@ -56,4 +62,12 @@ export async function signOut(): Promise<void> {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/sign-in");
+}
+
+/** Sign out and come back to `next` after signing in again (used before sensitive admin actions). */
+export async function reauthenticate(form: FormData): Promise<void> {
+  const next = safeNext(form.get("next"));
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  redirect(`/sign-in?reauth=1&next=${encodeURIComponent(next)}`);
 }

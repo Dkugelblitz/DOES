@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { cookies } from "next/headers";
 import { createClient, runAdminBootstrap } from "@/lib/supabase/server";
+import { NEXT_COOKIE, safeNext } from "@/lib/next-path";
 
 // OAuth (Google) return URL: exchange the PKCE code for a session, then bootstrap admins.
 export async function GET(request: NextRequest) {
@@ -10,7 +12,10 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
       await runAdminBootstrap();
-      return NextResponse.redirect(new URL("/", url.origin));
+      const jar = await cookies();
+      const next = safeNext(jar.get(NEXT_COOKIE)?.value);
+      jar.delete(NEXT_COOKIE);
+      return NextResponse.redirect(new URL(next, url.origin));
     }
   }
   return NextResponse.redirect(new URL("/sign-in?error=callback", url.origin));

@@ -59,11 +59,12 @@ export async function createUser(db, email, { verified = true, name = null } = {
 }
 
 // Run fn inside a transaction as an end user (role authenticated + JWT sub), like PostgREST does.
-export async function as(db, uid, fn, role = "authenticated") {
+// `claims` adds JWT claims, e.g. a recent sign-in: { amr: [{ method: "password", timestamp: <unix secs> }] }.
+export async function as(db, uid, fn, role = "authenticated", claims = {}) {
   await db.query("begin");
   try {
     await db.query(`set local role ${role}`);
-    await db.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify(uid ? { sub: uid, role } : { role })]);
+    await db.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify({ ...(uid ? { sub: uid } : {}), role, ...claims })]);
     const r = await fn(db);
     await db.query("commit");
     return r;

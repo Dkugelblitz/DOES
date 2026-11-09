@@ -15,9 +15,10 @@ export default async function Home() {
   const access = await requireOnboarded();
   const supabase = await createClient();
   await supabase.rpc("touch_activity");
-  const [{ data: levels }, { data: profile }] = await Promise.all([
+  const [{ data: levels }, { data: profile }, { count: unread }] = await Promise.all([
     supabase.from("levels").select("level, name, icon").order("level"),
     supabase.from("profiles").select("display_name").eq("id", access.user_id).single(),
+    supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", access.user_id).is("read_at", null),
   ]);
   const held = (levels ?? []).filter((l) => access.levels.includes(l.level));
   const active = held.find((l) => l.level === access.active_level) ?? held[0];
@@ -30,6 +31,9 @@ export default async function Home() {
     <main>
       <Nav current="home" isAdmin={access.is_admin} />
       <h1>Hi{profile?.display_name ? `, ${profile.display_name.split(" ")[0]}` : ""} 👋</h1>
+      {!!unread && (
+        <p className="card" role="status">🔔 You have {unread} new update{unread === 1 ? "" : "s"}. <Link href="/account">See them on your account page</Link>.</p>
+      )}
       <div className="card stack">
         <p style={{ margin: 0 }}>You&apos;re preparing as <strong>{active?.icon} {active?.name}</strong>
           {access.is_admin && <> · <strong>Admin</strong></>}.</p>
