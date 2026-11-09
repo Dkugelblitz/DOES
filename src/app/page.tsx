@@ -6,6 +6,7 @@ import { LevelSwitch } from "@/components/LevelSwitch";
 import { StudyTimer } from "@/components/StudyTimer";
 import type { StudyState } from "@/app/study/actions";
 import { RevisedButton } from "@/components/RevisedButton";
+import { GameCard, type Game } from "@/components/GameCard";
 
 type Summary = {
   level: number; topics: number; pareto: number; subtopics: number; cards: number; designs: number; sprint_items: number;
@@ -18,12 +19,13 @@ export default async function Home() {
   const access = await requireOnboarded();
   const supabase = await createClient();
   await supabase.rpc("touch_activity");
-  const [{ data: levels }, { data: profile }, { count: unread }, { data: study }, { data: revision }] = await Promise.all([
+  const [{ data: levels }, { data: profile }, { count: unread }, { data: study }, { data: revision }, { data: game }] = await Promise.all([
     supabase.from("levels").select("level, name, icon").order("level"),
     supabase.from("profiles").select("display_name").eq("id", access.user_id).single(),
     supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", access.user_id).is("read_at", null),
     supabase.rpc("study_state"),
     supabase.rpc("revision_due"),
+    supabase.rpc("my_game"),
   ]);
   const due = ((revision as { topics: { topic_id: string; name: string; days: number; state: string }[] } | null)?.topics ?? []);
   const held = (levels ?? []).filter((l) => access.levels.includes(l.level));
@@ -46,6 +48,7 @@ export default async function Home() {
         <LevelSwitch held={held} active={active?.level ?? 1} />
         <div className="row"><Link className="btn primary" href="/roadmap">Open your roadmap</Link><Link className="btn" href="/pareto">⚡ Pareto core</Link><Link className="btn" href="/sprint/plan">2-day sprint</Link><Link className="btn" href="/bookmarks">★ Bookmarks</Link></div>
       </div>
+      {game && <GameCard g={game as Game} />}
       <section className="card" aria-labelledby="rev-h">
         <h2 id="rev-h" style={{ marginTop: 0 }}>🔁 Revision due ({due.length})</h2>
         {due.length ? (

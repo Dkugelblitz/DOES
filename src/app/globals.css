@@ -186,3 +186,16 @@ code { font-family: ui-monospace, monospace; font-size: 0.88em; }
 /* ---- bookmarks ---- */
 .star { background: none; border: 0; font-size: 1.4rem; line-height: 1; cursor: pointer; color: var(--mu); min-width: 44px; min-height: 44px; display: inline-grid; place-items: center; }
 .star.on { color: var(--wn); }
+
+/* ---- gamification ---- */
+.streak { font-weight: 700; font-size: 1.1rem; }
+.xpbar { height: 10px; background: var(--bd); border-radius: 6px; overflow: hidden; margin-top: 10px; }
+.xpbar i { display: block; height: 100%; background: var(--chart); border-radius: 0 4px 4px 0; }
+.badges { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.badges li { display: grid; gap: 2px; text-align: center; padding: 12px 8px; border: 1px solid var(--bd); border-radius: 10px; font-size: 0.85rem; }
+.badges li.earned { border-color: var(--ok); }
+.badges li.locked .badge-icon { filter: grayscale(1); opacity: 0.4; }
+.badge-icon { font-size: 2rem; line-height: 1.2; }
+.ladder { list-style: none; margin: 0; padding: 0; }
+.ladder li { display: flex; justify-content: space-between; padding: 8px 10px; border-radius: 8px; }
+.ladder li.past { color: var(--mu); } .ladder li.here { background: var(--bg); border: 1px solid var(--ac); font-weight: 700; }

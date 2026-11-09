@@ -77,6 +77,13 @@ describe("reminder batches", () => {
       await assert.rejects(as(db, u, d => d.query(sql, sql.includes("$1") ? [u] : [])), /permission denied|service role only/);
   });
 
+  test("reminders are opt-in: nobody is emailed until they switch it on", async () => {
+    const h = await localHour();
+    assert.equal((await q1("select email_reminders from profiles where id = $1", [u]))[0].email_reminders, false);
+    assert.equal((await batch(h, h + 1)).length, 0);
+    await as(db, u, d => d.query("update profiles set email_reminders = true where id = $1", [u]));
+  });
+
   test("includes opted-in users in their morning window, once per 20 hours", async () => {
     const h = await localHour();
     const b = await batch(h, h + 1);

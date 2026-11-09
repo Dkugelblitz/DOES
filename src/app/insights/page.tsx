@@ -32,7 +32,10 @@ export default async function InsightsPage() {
   return (
     <main>
       <Nav current="insights" isAdmin={access.is_admin} />
-      <h1>📈 Study insights</h1>
+      <div className="row" style={{ justifyContent: "space-between" }}>
+        <h1>📈 Study insights</h1>
+        <Link className="btn" href="/achievements">🏆 Achievements</Link>
+      </div>
       <StudyTimer initial={state as StudyState} />
 
       <div className="grid-tiles">

@@ -13,6 +13,7 @@ Interview prep for Data Engineer, Principal Data Engineer and Data Architect lev
 - **Milestone 6 (study tracking): done.** Server-timed study sessions with start, pause and finish, heartbeats that save closed tabs and skip idle time, a 240-minute rollover, and an Insights page: last 7 days, time of day, averages and topics covered.
 - **Milestone 7 (notes and uploads): done.** Markdown notes with autosave and safe rendering, photo and PDF uploads through server-issued signed URLs (type, size and 25 MB quota checked twice, photos shrunk with thumbnails in the browser), saved links and excerpts, per-topic sharing with admins, an extractive summariser behind a swappable interface, a cross-topic summary page and "download my data".
 - **Milestone 8 (revision and bookmarks): done.** Due (5+ days) and overdue (7+) revision list on Home, a Revised action that resets the clock, roadmap tags, bookmarks with a Bookmarks page, and an hourly Netlify job that emails morning reminders in each user's timezone (opt-out on Account and a signed one-click unsubscribe).
+- **Milestone 9 (gamification): done.** XP awarded only by database triggers with idempotency keys (topic done 30 once per topic, due revision 10 once per cycle, note 5 and file 5 once per topic, 1 per study minute once per session), levels 1-7 with titles, daily streaks in the user's timezone, 13 data-driven badges, a backfill for earlier activity, and an Achievements page. Reminder emails are now opt-in.
 
 Setup from zero, on free tiers only: **[docs/SETUP.md](docs/SETUP.md)**.
 
