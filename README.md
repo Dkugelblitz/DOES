@@ -5,7 +5,7 @@ Interview prep for Data Engineer, Principal Data Engineer and Data Architect lev
 ## Status
 
 - **Milestone 1 (seed extraction): done.**
-- **Milestone 2 (schema, security and auth): done.** Google and email sign-in, one-level onboarding, `ADMIN_EMAILS` bootstrap, the full schema with row-level security, and level-gated content.
+- **Milestone 2 (schema, security and auth): done.** Google sign-in, one-level onboarding, `ADMIN_EMAILS` bootstrap, the full schema with row-level security, and level-gated content.
 
 - **Milestone 3 (admin console): done.** User list and detail, grant and revoke levels with expiry, level requests, bulk grant, CSV import with invites, promote and demote with re-sign-in and a last-admin guard, disable accounts, and the audit log.
 - **Milestone 4 (roadmap and progress): done.** Domains, modules and topics for the active level, subtopic checklists that drive status, readiness overall and per domain, and the ETA and on-pace plan.
@@ -34,7 +34,7 @@ Admins edit everything learners see under **Admin → Content**: topics (name, m
 
 ## Rate limits
 
-Admin actions, timer actions, notes, revisions, level requests and custom topics are rate-limited in the database. Sign-in and sign-up are rate-limited by Supabase Auth itself (Authentication → Rate Limits).
+Admin actions, timer actions, notes, revisions, level requests and custom topics are rate-limited in the database. Sign-in is Google only and rate-limited by Supabase Auth itself (Authentication → Rate Limits).
 
 ## How access is enforced
 

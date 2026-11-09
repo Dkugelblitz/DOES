@@ -6,7 +6,6 @@ import { safeNext } from "@/lib/next-path";
 const ERRORS: Record<string, string> = {
   google: "Google sign-in didn't start. Please try again.",
   callback: "That sign-in link didn't work. Please try again.",
-  confirm: "That confirmation link is invalid or has expired. Sign in to get a new one.",
 };
 
 export default async function SignInPage({ searchParams }: { searchParams: Promise<{ error?: string; next?: string; reauth?: string }> }) {

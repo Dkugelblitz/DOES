@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const PUBLIC_PATHS = ["/sign-in", "/auth/callback", "/auth/confirm", "/unsubscribe"];
+const PUBLIC_PATHS = ["/sign-in", "/auth/callback", "/unsubscribe"];
 
 // Refreshes the Supabase session cookie on every request and sends signed-out
 // visitors to /sign-in. Authorisation itself is enforced by the database (RLS).

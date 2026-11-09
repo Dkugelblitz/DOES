@@ -33,18 +33,10 @@ npm run dev                     # http://localhost:3000
 - Site URL: `http://localhost:3000` for now (change to your Netlify address in step 6).
 - Redirect URLs: add `http://localhost:3000/auth/callback` and later the Netlify ones from step 6.
 
-**Authentication → Providers → Email**
-- Keep **Confirm email** turned on. The admin bootstrap only promotes verified emails.
-- Set minimum password length to 8.
+**Authentication → Sign In / Providers → Email**
+- Switch the **Email** provider **off**. DEOS is Google sign-in only: no passwords and no sign-up emails. Turning Email off makes that true on the server too, not just in the app's sign-in page.
 
-**Email template:** no change needed. The app accepts the default confirmation link. (If you customise the template later, you can link to `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`.)
-
-**Custom SMTP (needed for real users)**
-Supabase's built-in email sender is limited to a handful of emails per hour and only for testing. Turn on **Custom SMTP** (Authentication → Emails → SMTP Settings) with a free sender. Options that cost nothing:
-- **Gmail with an App Password** (no domain needed). Turn on 2-step verification on the Google account, create an App Password, then use host `smtp.gmail.com`, port `587`, your Gmail address as user and the App Password as password. Good for a small user base.
-- **A free transactional provider** (Brevo, Resend, etc.). Better deliverability, but most need a domain you own. Check their current free limits.
-
-After saving, raise **Authentication → Rate Limits → emails per hour** to a value your provider allows.
+You don't need Custom SMTP for sign-in. Google handles it.
 
 ## 4. Google sign-in
 
@@ -70,7 +62,7 @@ This only ever runs on the server with the secret key. There is no client-side f
    `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `ADMIN_EMAILS`, and `NEXT_PUBLIC_SITE_URL` set to your Netlify address (for example `https://deos-prep.netlify.app`).
 4. Deploy. If you change environment variables later, trigger a new deploy for them to take effect.
 5. Add the live address everywhere sign-in needs it:
-   - **Supabase → Authentication → URL Configuration:** set **Site URL** to the Netlify address, and add `https://YOUR-SITE.netlify.app/auth/callback` and `https://YOUR-SITE.netlify.app/auth/confirm` to **Redirect URLs**. Keep the localhost ones for development.
+   - **Supabase → Authentication → URL Configuration:** set **Site URL** to the Netlify address, and add `https://YOUR-SITE.netlify.app/auth/callback` to **Redirect URLs**. Keep the localhost ones for development.
    - **Google Cloud → your OAuth client:** add `https://YOUR-SITE.netlify.app` to **Authorised JavaScript origins**. The redirect URI (the Supabase callback) stays the same.
 
 **Keeping within the free credits.** Netlify's free plan gives a fixed number of credits a month, and the site pauses if they run out. Each production deploy uses a chunk of them, so:
@@ -78,14 +70,12 @@ This only ever runs on the server with the secret key. There is no client-side f
 - merge to `main` when you want to release, not after every small change;
 - check **Usage** in the Netlify dashboard now and then.
 
-## 7. Email: sign-up confirmations and revision reminders (free)
+## 7. Email: revision reminders (optional, off by default)
 
-One Gmail account can send both, with no domain needed. (A free transactional provider such as Brevo also works; most need a domain you own for good deliverability.)
+DEOS is Google sign-in only, so no sign-up or password emails are ever needed. The only email DEOS can send is the opt-in revision reminder, and only if you add the settings below. Without them, nothing is ever emailed.
 
 1. **Create an App Password.** On the Google account you'll send from: turn on 2-Step Verification, then go to **Google Account → Security → App passwords** and create one called "DEOS". Copy the 16-character password.
-2. **Supabase (sign-up and password emails):** **Authentication → Emails → SMTP Settings → Enable custom SMTP**:
-   host `smtp.gmail.com`, port `587`, username = the Gmail address, password = the App Password, sender email = the Gmail address, sender name `DEOS`. Then raise **Authentication → Rate Limits → emails per hour** (for example to 30).
-3. **Netlify (revision reminders):** add these environment variables, then redeploy:
+2. **Netlify:** add these environment variables, then redeploy:
 
    | Name | Value |
    |---|---|

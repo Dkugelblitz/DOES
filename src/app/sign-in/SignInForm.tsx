@@ -1,50 +1,26 @@
 "use client";
-import { useActionState, useState } from "react";
-import { signInWithGoogle, signInWithPassword, signUpWithPassword, type AuthState } from "@/app/auth/actions";
+import { useFormStatus } from "react-dom";
+import { signInWithGoogle } from "@/app/auth/actions";
+
+function GoogleButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button className="btn primary" type="submit" disabled={pending} style={{ width: "100%" }}>
+      {pending ? "Opening Google…" : <><span aria-hidden="true">G</span>&nbsp;Continue with Google</>}
+    </button>
+  );
+}
 
 export function SignInForm({ initialError, next = "/" }: { initialError?: string; next?: string }) {
-  const [mode, setMode] = useState<"in" | "up">("in");
-  const [inState, signIn, signingIn] = useActionState<AuthState, FormData>(signInWithPassword, {});
-  const [upState, signUp, signingUp] = useActionState<AuthState, FormData>(signUpWithPassword, {});
-  const state = mode === "in" ? inState : upState;
-  const pending = signingIn || signingUp;
-  const error = state.error ?? initialError;
-
   return (
     <div className="stack">
       <form action={signInWithGoogle}>
         <input type="hidden" name="next" value={next} />
-        <button className="btn" type="submit" style={{ width: "100%" }}>
-          <span aria-hidden="true">G</span> Continue with Google
-        </button>
+        <GoogleButton />
       </form>
-      <div className="divider">or use email</div>
-      <form action={mode === "in" ? signIn : signUp} className="stack" noValidate>
-        <input type="hidden" name="next" value={next} />
-        <label>
-          Email
-          <input name="email" type="email" autoComplete="email" required />
-        </label>
-        <label>
-          Password
-          <input name="password" type="password" minLength={8} required
-            autoComplete={mode === "in" ? "current-password" : "new-password"}
-            aria-describedby="pw-hint" />
-          <span id="pw-hint" className="muted">At least 8 characters.</span>
-        </label>
-        <div role="status" aria-live="polite">
-          {error && <p className="error">{error}</p>}
-          {state.info && <p className="ok">{state.info}</p>}
-        </div>
-        <button className="btn primary" type="submit" disabled={pending}>
-          {pending ? "Please wait…" : mode === "in" ? "Sign in" : "Create account"}
-        </button>
-      </form>
-      <p className="muted">
-        {mode === "in" ? "New here? " : "Already have an account? "}
-        <button type="button" className="btn" onClick={() => setMode(mode === "in" ? "up" : "in")}>
-          {mode === "in" ? "Create an account" : "Sign in instead"}
-        </button>
+      <div role="status" aria-live="polite">{initialError && <p className="error" style={{ margin: 0 }}>{initialError}</p>}</div>
+      <p className="muted" style={{ margin: 0 }}>
+        New here? Signing in with Google creates your account. We only use your name and email address.
       </p>
     </div>
   );
