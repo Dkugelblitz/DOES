@@ -5,6 +5,7 @@ import { describeNotification } from "@/lib/notifications";
 import { Nav } from "@/components/Nav";
 import { ActionForm } from "@/components/ActionForm";
 import { cancelRequest, markNotificationsRead, requestLevel } from "./actions";
+import { setEmailReminders } from "@/app/revision/actions";
 
 export default async function AccountPage() {
   const access = await requireOnboarded();
@@ -14,7 +15,7 @@ export default async function AccountPage() {
     supabase.from("level_grants").select("level, expires_at").eq("user_id", access.user_id).is("revoked_at", null),
     supabase.from("level_requests").select("id, requested_level, status, note, decision_note, created_at, decided_at").eq("user_id", access.user_id).order("created_at", { ascending: false }).limit(20),
     supabase.from("notifications").select("id, kind, payload, read_at, created_at").eq("user_id", access.user_id).order("created_at", { ascending: false }).limit(20),
-    supabase.from("profiles").select("email, display_name, timezone").eq("id", access.user_id).single(),
+    supabase.from("profiles").select("email, display_name, timezone, email_reminders").eq("id", access.user_id).single(),
   ]);
   const name = (n: number) => levels?.find((l) => l.level === n)?.name ?? `Level ${n}`;
   const held = new Set(access.levels);
@@ -30,6 +31,15 @@ export default async function AccountPage() {
       <p className="muted">{profile?.display_name ? `${profile.display_name} · ` : ""}{profile?.email} · timezone {profile?.timezone}</p>
 
       <p><a className="btn" href="/api/export" download>Download my data (JSON)</a></p>
+      <section className="card" aria-labelledby="em-h">
+        <h2 id="em-h" style={{ marginTop: 0 }}>Revision reminder emails</h2>
+        <p style={{ marginTop: 0 }}>{profile?.email_reminders
+          ? "On. When topics are due for revision, you get one short email in the morning (your time), at most once a day."
+          : "Off. Your revision list is still on your home page."}</p>
+        <ActionForm action={setEmailReminders} submit={profile?.email_reminders ? "Turn off reminder emails" : "Turn on reminder emails"} inline>
+          <input type="hidden" name="on" value={String(!profile?.email_reminders)} />
+        </ActionForm>
+      </section>
       <section className="card" aria-labelledby="lv-h">
         <h2 id="lv-h" style={{ marginTop: 0 }}>Your levels</h2>
         <ul className="mini">

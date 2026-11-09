@@ -182,3 +182,7 @@ code { font-family: ui-monospace, monospace; font-size: 0.88em; }
 .excerpt { display: block; font-size: 0.85rem; margin-top: 2px; overflow-wrap: anywhere; }
 .add-link { margin-top: 8px; } .add-link summary { font-weight: 600; margin-bottom: 8px; }
 .topic-summary h3 { font-size: 1rem; margin: 14px 0 4px; } .topic-summary ul { margin: 4px 0; }
+
+/* ---- bookmarks ---- */
+.star { background: none; border: 0; font-size: 1.4rem; line-height: 1; cursor: pointer; color: var(--mu); min-width: 44px; min-height: 44px; display: inline-grid; place-items: center; }
+.star.on { color: var(--wn); }

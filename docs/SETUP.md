@@ -78,13 +78,37 @@ This only ever runs on the server with the secret key. There is no client-side f
 - merge to `main` when you want to release, not after every small change;
 - check **Usage** in the Netlify dashboard now and then.
 
+## 7. Email: sign-up confirmations and revision reminders (free)
+
+One Gmail account can send both, with no domain needed. (A free transactional provider such as Brevo also works; most need a domain you own for good deliverability.)
+
+1. **Create an App Password.** On the Google account you'll send from: turn on 2-Step Verification, then go to **Google Account → Security → App passwords** and create one called "DEOS". Copy the 16-character password.
+2. **Supabase (sign-up and password emails):** **Authentication → Emails → SMTP Settings → Enable custom SMTP**:
+   host `smtp.gmail.com`, port `587`, username = the Gmail address, password = the App Password, sender email = the Gmail address, sender name `DEOS`. Then raise **Authentication → Rate Limits → emails per hour** (for example to 30).
+3. **Netlify (revision reminders):** add these environment variables, then redeploy:
+
+   | Name | Value |
+   |---|---|
+   | `SMTP_HOST` | `smtp.gmail.com` |
+   | `SMTP_PORT` | `587` |
+   | `SMTP_USER` | the Gmail address |
+   | `SMTP_PASS` | the App Password (tick **Contains secret values**) |
+   | `MAIL_FROM` | `DEOS <the Gmail address>` |
+   | `REMINDER_SECRET` | a random string (see `.env.example` for a one-line generator; tick **Contains secret values**) |
+
+**How reminders work.** `netlify/functions/revision-reminders.mts` runs every hour on the live site. Each run emails people who have topics due for revision, have reminders switched on, have a verified email, and for whom it's between 8 and 11 am in their own timezone, at most once every 20 hours. Every email has a one-click unsubscribe link, and people can switch reminders on or off on their Account page. To check it, open **Netlify → Logs → Functions → revision-reminders** (you can also trigger a run there). Without the email variables, each run just logs how many reminders it would have sent.
+
+Gmail allows about 500 emails a day from a personal account. Each hourly run sends at most 8 (Netlify's free plan stops functions after 10 seconds), so up to about 32 per morning window per timezone. Plenty for a small group; switch to a transactional provider if you grow beyond that.
+
+The hourly run also touches the database, which keeps the free Supabase project from pausing after a week of inactivity.
+
 ## Free-tier limits to keep in mind
 
 | Service | Limit | What DEOS does about it |
 |---|---|---|
 | Netlify Free | Fixed monthly credits shared by deploys, bandwidth, requests and compute; site pauses when they run out | Production deploys only from `main`; free branch previews for everything else |
 | Supabase Free | 500 MB DB, 1 GB files, 5 GB egress/month | 25 MB upload quota per user; images compressed before upload |
-| Supabase Free | Project pauses after 7 days with no activity | The daily reminder job keeps it awake (Milestone 8) |
+| Supabase Free | Project pauses after 7 days with no activity | The hourly reminder job touches the database, which keeps it awake |
 | Supabase Free | No automatic backups | Nightly `pg_dump` via GitHub Actions (added later) |
 
 ## Running the tests

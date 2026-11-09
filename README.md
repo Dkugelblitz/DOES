@@ -12,6 +12,7 @@ Interview prep for Data Engineer, Principal Data Engineer and Data Architect lev
 - **Milestone 5 (Pareto and sprint): done.** A Pareto tab per held level with its own progress, and the 2-day sprint: time-blocked plan with checklists, flip cards with mastery, system designs with the answer framework, and the HackerRank AI guide, all filtered by level.
 - **Milestone 6 (study tracking): done.** Server-timed study sessions with start, pause and finish, heartbeats that save closed tabs and skip idle time, a 240-minute rollover, and an Insights page: last 7 days, time of day, averages and topics covered.
 - **Milestone 7 (notes and uploads): done.** Markdown notes with autosave and safe rendering, photo and PDF uploads through server-issued signed URLs (type, size and 25 MB quota checked twice, photos shrunk with thumbnails in the browser), saved links and excerpts, per-topic sharing with admins, an extractive summariser behind a swappable interface, a cross-topic summary page and "download my data".
+- **Milestone 8 (revision and bookmarks): done.** Due (5+ days) and overdue (7+) revision list on Home, a Revised action that resets the clock, roadmap tags, bookmarks with a Bookmarks page, and an hourly Netlify job that emails morning reminders in each user's timezone (opt-out on Account and a signed one-click unsubscribe).
 
 Setup from zero, on free tiers only: **[docs/SETUP.md](docs/SETUP.md)**.
 
@@ -69,7 +70,7 @@ The YAML is the **initial** seed. Once the database is seeded, admins edit conte
 | Web app | Netlify Free | Fixed monthly credits; the site pauses if they run out. Production deploys only from `main`. |
 | DB, auth, storage | Supabase Free | 500 MB database, 1 GB files, 5 GB egress. Pauses after 7 days of inactivity. No backups. |
 | Auth email | Custom SMTP through a free transactional provider | Supabase's built-in sender is heavily rate-limited, so custom SMTP is needed. |
-| Scheduled jobs | Supabase `pg_cron` (host-independent) | The daily revision email also keeps the project from pausing. |
+| Scheduled jobs | Netlify scheduled function, hourly | Each run fits Netlify's 10-second limit and also keeps Supabase from pausing. |
 | Rate limiting | Postgres-backed limiter | No extra service. |
 | Backups | GitHub Actions nightly `pg_dump` | Free on public repos, and within free minutes on private repos. |
 | Thumbnails | Generated in the browser at upload | Avoids paid image transforms. |

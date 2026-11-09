@@ -14,6 +14,9 @@ import { addLink, deleteAttachment, deleteLink, setShared } from "@/app/material
 import { TopicControls } from "./TopicControls";
 import { NotesEditor } from "./NotesEditor";
 import { UploadBox } from "./UploadBox";
+import { BookmarkStar } from "@/components/BookmarkStar";
+import { RevisedButton } from "@/components/RevisedButton";
+import { revisionState } from "@/lib/revision";
 
 const SLUG = /^[a-z0-9-]+$/;
 
@@ -31,11 +34,11 @@ export default async function TopicPage({ params }: { params: Promise<{ domain: 
 
   const uid = access.user_id;
   const [{ data: dom }, { data: mod }, { data: subs }, { data: prog }, { data: subProg }, { data: flags }, { data: levels }, { data: study },
-    { data: note }, { data: links }, { data: files }, { data: allFiles }, { data: share }, { data: settings }] = await Promise.all([
+    { data: note }, { data: links }, { data: files }, { data: allFiles }, { data: share }, { data: settings }, { data: star }, { data: game }] = await Promise.all([
     supabase.from("domains").select("name, icon").eq("slug", topic.domain_slug).single(),
     supabase.from("modules").select("name").eq("domain_slug", topic.domain_slug).eq("slug", topic.module_slug).single(),
     supabase.from("subtopics").select("id, name, sort_order").eq("topic_id", id).order("sort_order"),
-    supabase.from("topic_progress").select("status").eq("user_id", uid).eq("topic_id", id).maybeSingle(),
+    supabase.from("topic_progress").select("status, done_at, last_revised_at").eq("user_id", uid).eq("topic_id", id).maybeSingle(),
     supabase.from("subtopic_progress").select("subtopic_id").eq("user_id", uid).eq("done", true).like("subtopic_id", `${id}#%`),
     supabase.rpc("my_topic_flags"),
     supabase.from("levels").select("level, name"),
@@ -46,7 +49,11 @@ export default async function TopicPage({ params }: { params: Promise<{ domain: 
     supabase.from("attachments").select("bytes").eq("user_id", uid),
     supabase.from("topic_shares").select("shared_at").eq("user_id", uid).eq("topic_id", id).maybeSingle(),
     supabase.from("content_documents").select("data").eq("key", "settings").single(),
+    supabase.from("bookmarks").select("topic_id").eq("user_id", uid).eq("topic_id", id).maybeSingle(),
+    supabase.from("content_documents").select("data").eq("key", "gamification").single(),
   ]);
+  const rv = game?.data?.revision ?? {};
+  const revision = revisionState({ status: prog?.status ?? 0, doneAt: prog?.done_at ?? null, lastRevisedAt: prog?.last_revised_at ?? null, due: rv.due_after_days, overdue: rv.overdue_after_days });
   const done = new Set((subProg ?? []).map((s) => s.subtopic_id));
   const core: number[] = (flags ?? []).find((f: { topic_id: string }) => f.topic_id === id)?.pareto_levels ?? [];
   const levelName = (n: number) => levels?.find((l) => l.level === n)?.name ?? `Level ${n}`;
@@ -66,7 +73,10 @@ export default async function TopicPage({ params }: { params: Promise<{ domain: 
     <main>
       <Nav current="roadmap" isAdmin={access.is_admin} />
       <p className="muted"><Link href={`/roadmap?domain=${topic.domain_slug}`}>← {dom?.icon} {dom?.name}</Link> · {mod?.name}</p>
-      <h1>{topic.name}</h1>
+      <div className="row" style={{ justifyContent: "space-between", flexWrap: "nowrap" }}>
+        <h1>{topic.name}</h1>
+        <BookmarkStar topicId={id} topicName={topic.name} on={!!star} />
+      </div>
       <div className="row">
         <span className="tag">{levelName(topic.min_level)} and up</span>
         {core.map((l) => <span key={l} className="tag core">Core for {levelName(l)}</span>)}
@@ -75,6 +85,14 @@ export default async function TopicPage({ params }: { params: Promise<{ domain: 
         <TopicControls topicId={id} status={prog?.status ?? 0}
           subtopics={(subs ?? []).map((s) => ({ id: s.id, name: s.name, done: done.has(s.id) }))} />
       </div>
+      {revision.state !== "not_done" && (
+        <section className="card row" aria-label="Revision" style={{ justifyContent: "space-between" }}>
+          <span>🔁 {revision.state === "fresh"
+            ? `Reviewed ${revision.days === 0 ? "today" : `${revision.days} day${revision.days === 1 ? "" : "s"} ago`}. Due for a quick review in ${revision.dueInDays} day${revision.dueInDays === 1 ? "" : "s"}.`
+            : `${revision.days} days since your last review. ${revision.state === "overdue" ? "A quick review now will lock it in." : "Good time for a quick review."}`}</span>
+          <RevisedButton topicId={id} topicName={topic.name} />
+        </section>
+      )}
       {study && <StudyTimer initial={study as StudyState} topicId={id} topicName={topic.name} />}
 
       <section className="card" aria-labelledby="notes-h">

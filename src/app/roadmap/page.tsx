@@ -6,6 +6,7 @@ import { eta } from "@/lib/progress";
 import { Nav } from "@/components/Nav";
 import { Bar } from "@/components/Bar";
 import { StatusDot } from "@/components/StatusDot";
+import { BookmarkStar } from "@/components/BookmarkStar";
 import { LevelSwitch } from "@/components/LevelSwitch";
 import { StudySettings } from "./StudySettings";
 
@@ -84,9 +85,12 @@ export default async function RoadmapPage({ searchParams }: { searchParams: Prom
                       <StatusDot topicId={t.id} topicName={t.name} status={t.status} />
                       <Link href={`/topics/${t.id}`} className="topic-name">{t.name}</Link>
                       <span className="meta">
+                        {t.revision === "due" && <span className="tag">revise soon</span>}
+                        {t.revision === "overdue" && <span className="tag core">revise now</span>}
                         {t.core && <span className="tag" title="Pareto core for this level">core</span>}
                         {t.subTotal > 0 && <span>{t.subDone}/{t.subTotal}</span>}
                       </span>
+                      <BookmarkStar topicId={t.id} topicName={t.name} on={t.bookmarked} />
                     </li>
                   ))}
                 </ul>
