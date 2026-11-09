@@ -29,6 +29,7 @@ export default async function AccountPage() {
       <h1>Your account</h1>
       <p className="muted">{profile?.display_name ? `${profile.display_name} · ` : ""}{profile?.email} · timezone {profile?.timezone}</p>
 
+      <p><a className="btn" href="/api/export" download>Download my data (JSON)</a></p>
       <section className="card" aria-labelledby="lv-h">
         <h2 id="lv-h" style={{ marginTop: 0 }}>Your levels</h2>
         <ul className="mini">

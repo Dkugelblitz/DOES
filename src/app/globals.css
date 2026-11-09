@@ -162,3 +162,23 @@ code { font-family: ui-monospace, monospace; font-size: 0.88em; }
 .bar-fill { display: block; height: 100%; background: var(--chart); border-radius: 0 4px 4px 0; min-width: 0; }
 .table-view { margin-top: 10px; } .table-view summary { font-size: 0.85rem; color: var(--mu); }
 .table-view table { margin-top: 6px; max-width: 360px; }
+
+/* ---- notes, files, links ---- */
+.md { line-height: 1.6; overflow-wrap: anywhere; }
+.md h1, .md h2, .md h3 { font-size: 1.05rem; margin: 12px 0 4px; }
+.md pre { background: var(--bg); border: 1px solid var(--bd); border-radius: 8px; padding: 10px; overflow-x: auto; }
+.md code { background: var(--bg); padding: 1px 4px; border-radius: 4px; }
+.md table { width: auto; } .md th, .md td { border: 1px solid var(--bd); }
+.md blockquote { margin: 0; padding-left: 12px; border-left: 3px solid var(--bd); color: var(--mu); }
+.note-preview { border: 1px solid var(--bd); border-radius: 8px; padding: 4px 12px; background: var(--bg); }
+.upload { display: grid; gap: 4px; padding: 16px; border: 2px dashed var(--bd); border-radius: var(--radius); cursor: pointer; font-weight: 600; }
+.upload:focus-within, .upload:hover { border-color: var(--ac); }
+.upload input { border: 0; padding: 4px 0; background: none; }
+.files { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 8px; }
+.files li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--bd); }
+.file-link { display: flex; align-items: center; gap: 10px; color: var(--tx); text-decoration: none; min-width: 0; overflow-wrap: anywhere; }
+.file-link img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 1px solid var(--bd); flex: none; }
+.file-icon { width: 64px; height: 64px; display: grid; place-items: center; font-size: 1.8rem; border: 1px solid var(--bd); border-radius: 8px; flex: none; }
+.excerpt { display: block; font-size: 0.85rem; margin-top: 2px; overflow-wrap: anywhere; }
+.add-link { margin-top: 8px; } .add-link summary { font-weight: 600; margin-bottom: 8px; }
+.topic-summary h3 { font-size: 1rem; margin: 14px 0 4px; } .topic-summary ul { margin: 4px 0; }

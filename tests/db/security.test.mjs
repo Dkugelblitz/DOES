@@ -56,7 +56,7 @@ describe("sign-up and onboarding", () => {
       "public.admin_import_users", "public.admin_list_users", "public.admin_overview", "public.admin_revoke_level",
       "public.admin_set_active_level", "public.admin_set_admin", "public.admin_set_disabled", "public.admin_user_detail",
       "public.cancel_level_request", "public.complete_onboarding", "public.heartbeat_study_session", "public.level_summary", "public.my_access", "public.my_invite",
-      "public.my_insights", "public.my_topic_flags", "public.pareto_topics", "public.request_level", "public.set_active_level", "public.set_card_mastered", "public.set_sprint_item",
+      "public.my_insights", "public.my_topic_flags", "public.pareto_topics", "public.request_level", "public.save_note", "public.set_active_level", "public.set_card_mastered", "public.set_sprint_item",
       "public.set_subtopic_done", "public.set_topic_status", "public.start_study_session", "public.stop_study_session", "public.study_state", "public.touch_activity"];
     const rows = await q1(db, `select n.nspname || '.' || p.proname f,
         has_function_privilege('anon', p.oid, 'execute') anon, has_function_privilege('authenticated', p.oid, 'execute') auth

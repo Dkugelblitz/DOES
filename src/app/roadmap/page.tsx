@@ -32,6 +32,7 @@ export default async function RoadmapPage({ searchParams }: { searchParams: Prom
       <Nav current="roadmap" isAdmin={access.is_admin} />
       <div className="row" style={{ justifyContent: "space-between" }}>
         <h1>{active.icon} {active.name} roadmap</h1>
+        <Link className="btn" href={`/notes?level=${active.level}`}>📚 Study summary</Link>
         <LevelSwitch held={held} active={active.level} />
       </div>
 

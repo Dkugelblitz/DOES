@@ -25,7 +25,7 @@ export async function createClient() {
  * Service-role client. Bypasses RLS, so it is used only for narrowly scoped server tasks
  * (the ADMIN_EMAILS bootstrap and scheduled jobs). Never import this from client code.
  */
-function createServiceClient() {
+export function createServiceClient() {
   const key = process.env.SUPABASE_SECRET_KEY;
   if (!key) throw new Error("Missing SUPABASE_SECRET_KEY. See .env.example.");
   return createSupabaseClient(publicEnv.supabaseUrl(), key, {
