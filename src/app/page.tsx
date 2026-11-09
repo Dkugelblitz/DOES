@@ -38,7 +38,7 @@ export default async function Home() {
         <p style={{ margin: 0 }}>You&apos;re preparing as <strong>{active?.icon} {active?.name}</strong>
           {access.is_admin && <> · <strong>Admin</strong></>}.</p>
         <LevelSwitch held={held} active={active?.level ?? 1} />
-        <div><Link className="btn primary" href="/roadmap">Open your roadmap</Link></div>
+        <div className="row"><Link className="btn primary" href="/roadmap">Open your roadmap</Link><Link className="btn" href="/pareto">⚡ Pareto core</Link><Link className="btn" href="/sprint/plan">2-day sprint</Link></div>
       </div>
       {s && (
         <>
@@ -56,7 +56,7 @@ export default async function Home() {
               {s.domains.map((d) => <li key={d.slug}>{d.icon} {d.name}: {d.topics} topics</li>)}
             </ul>
           </div>
-          <p className="muted">Pareto tabs, flip cards and designs get their own screens in the next milestone.</p>
+          
         </>
       )}
     </main>

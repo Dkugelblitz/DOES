@@ -124,3 +124,13 @@ td.code { font-family: ui-monospace, monospace; font-size: 0.78rem; max-width: 2
 .btn.danger-outline { border-color: var(--err); color: var(--err); }
 details > summary { cursor: pointer; min-height: 32px; }
 code { font-family: ui-monospace, monospace; font-size: 0.88em; }
+
+/* ---- pareto and sprint ---- */
+.struck { color: var(--mu); text-decoration: line-through; }
+.sprint-cta { border-color: var(--ac); }
+.flip { padding: 0; }
+.flip-q { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 16px; cursor: pointer; min-height: 44px; border-radius: var(--radius); }
+.flip-a { padding: 0 16px 16px; border-top: 1px dashed var(--bd); }
+.flip.open { border-color: var(--ac); }
+.steps { margin: 0; padding-left: 22px; }
+.steps li { padding: 6px 0; } .steps li span:last-child { margin-left: 8px; }

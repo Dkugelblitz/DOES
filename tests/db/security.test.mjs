@@ -56,7 +56,7 @@ describe("sign-up and onboarding", () => {
       "public.admin_import_users", "public.admin_list_users", "public.admin_overview", "public.admin_revoke_level",
       "public.admin_set_active_level", "public.admin_set_admin", "public.admin_set_disabled", "public.admin_user_detail",
       "public.cancel_level_request", "public.complete_onboarding", "public.level_summary", "public.my_access", "public.my_invite",
-      "public.my_topic_flags", "public.pareto_topics", "public.request_level", "public.set_active_level",
+      "public.my_topic_flags", "public.pareto_topics", "public.request_level", "public.set_active_level", "public.set_card_mastered", "public.set_sprint_item",
       "public.set_subtopic_done", "public.set_topic_status", "public.touch_activity"];
     const rows = await q1(db, `select n.nspname || '.' || p.proname f,
         has_function_privilege('anon', p.oid, 'execute') anon, has_function_privilege('authenticated', p.oid, 'execute') auth
@@ -95,10 +95,14 @@ describe("level-gated content", () => {
   });
 
   test("direct ID access to higher-level content returns nothing", async () => {
+    // Controls: every hidden ID below really exists, so an empty result means "blocked", not "typo".
+    for (const [t, id] of [["topics", LEVEL3_TOPIC], ["cards", "databricks-liquid-clustering-vs-partitioning-z-orde"], ["designs", "enterprise-rag-copilot-platform"], ["sprint_items", "d2b5i1"]])
+      assert.equal(await count(db, `select count(*) from ${t} where id = $1`, [id]), 1, `${t} ${id} exists`);
     await as(db, de, async d => {
       assert.equal(await count(d, "select count(*) from topics where id = $1", [LEVEL3_TOPIC]), 0);
       assert.equal(await count(d, "select count(*) from subtopics where topic_id = $1", [LEVEL2_TOPIC]), 0);
-      assert.equal(await count(d, "select count(*) from cards where id = 'databricks-liquid-clustering-vs-partitioning-z-order'"), 0);
+      assert.equal(await count(d, "select count(*) from cards where id = 'databricks-liquid-clustering-vs-partitioning-z-orde'"), 0);
+      assert.equal(await count(d, "select count(*) from designs where id = 'medallion-lakehouse'"), 1, "control: a visible design is found by ID");
       assert.equal(await count(d, "select count(*) from designs where id = 'enterprise-rag-copilot-platform'"), 0);
       assert.equal(await count(d, "select count(*) from sprint_items where id = 'd2b5i1'"), 0);
     });
@@ -368,5 +372,28 @@ describe("progress functions", () => {
     await denied(as(db, u, d => d.query("select public.set_subtopic_done('databricks/liquid-clustering#clustering-keys', true)")), /not available/);
     await denied(as(db, u, d => d.query("select public.set_topic_status('databricks/does-not-exist', 1::smallint)")), /not available/);
     assert.equal(await count(db, "select count(*) from topic_progress where user_id = $1", [other]), 0, "only the caller's rows change");
+  });
+});
+
+describe("sprint checklist and flip cards", () => {
+  let db, de;
+  before(async () => { db = await cluster.freshDb(); de = await createUser(db, "sprinter@example.com"); await onboard(db, de, 1); });
+  after(() => db.end());
+  const call = (sql, args) => as(db, de, d => q1(d, sql, args)).then(r => Object.values(r[0])[0]);
+
+  test("a level-1 user can tick level-1 sprint items and master level-1 cards", async () => {
+    assert.equal(await call("select public.set_sprint_item('d1b1i1', true)"), true);
+    assert.equal(await call("select public.set_card_mastered('sql-deduplicate-rows', true)"), true);
+    assert.equal(await count(db, "select count(*) from sprint_progress where user_id = $1", [de]), 1);
+    assert.equal(await call("select public.set_sprint_item('d1b1i1', false)"), false);
+    assert.equal(await count(db, "select count(*) from sprint_progress where user_id = $1", [de]), 0);
+  });
+
+  test("higher-level items and cards are refused", async () => {
+    // d1b1i5 (Change Data Feed + deletion vectors) is level 2; d2b5i1 is in a level-3 block.
+    await denied(as(db, de, d => d.query("select public.set_sprint_item('d1b1i5', true)")), /not available/);
+    await denied(as(db, de, d => d.query("select public.set_sprint_item('d2b5i1', true)")), /not available/);
+    await denied(as(db, de, d => d.query("select public.set_card_mastered('databricks-liquid-clustering-vs-partitioning-z-orde', true)")), /not available/);
+    await denied(as(db, de, d => d.query("select public.set_card_mastered('nope', true)")), /not available/);
   });
 });
