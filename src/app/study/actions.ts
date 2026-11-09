@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { fill, pick, type Messages } from "@/lib/messages";
 
 export type StudyState = {
   server_now: string;
@@ -10,6 +11,7 @@ export type StudyState = {
   auto_saved_minutes?: number;
   topics_done?: number;
   error?: string;
+  closing?: { summary: string; totals: string; farewell: string; xpToday: number };
 };
 
 const TOPIC_ID = /^[a-z0-9-]+\/[a-z0-9-]+$/;
@@ -30,8 +32,27 @@ export async function heartbeatStudy(): Promise<StudyState> {
   return call("heartbeat_study_session");
 }
 
-export async function stopStudy(): Promise<StudyState> {
+/** Pause (finish = false) or finish for the day (finish = true, adds the closing message). */
+export async function stopStudy(finish = false): Promise<StudyState> {
   const r = await call("stop_study_session");
-  revalidatePath("/insights");
-  return r;
+  revalidatePath("/", "layout");
+  if (!finish || r.error) return r;
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const [{ data: doc }, { data: game }, { data: xp }] = await Promise.all([
+    supabase.from("content_documents").select("data").eq("key", "messages").single(),
+    supabase.rpc("my_game"),
+    supabase.from("xp_events").select("points").eq("user_id", auth.user?.id ?? "").gte("created_at", new Date(Date.now() - 86_400_000).toISOString()),
+  ]);
+  const m = doc?.data as Messages | undefined;
+  const g = game as { stats: { topics_done: number; study_minutes: number } } | null;
+  return {
+    ...r,
+    closing: {
+      summary: r.saved_minutes ? fill(m?.closing.summary_with_minutes, { minutes: r.saved_minutes }) : (m?.closing.summary_no_minutes ?? ""),
+      totals: fill(m?.closing.totals, { topics_done: g?.stats.topics_done ?? 0, hours: ((g?.stats.study_minutes ?? 0) / 60).toFixed(1) }),
+      farewell: pick(m?.closing.farewells) ?? "",
+      xpToday: (xp ?? []).reduce((a, x) => a + (x.points as number), 0),
+    },
+  };
 }

@@ -5,7 +5,7 @@ import { revisionState, type RevisionState } from "@/lib/revision";
 
 export type Domain = { slug: string; name: string; icon: string; sort_order: number };
 export type Module = { domain_slug: string; slug: string; name: string; sort_order: number };
-export type Topic = { id: string; domain_slug: string; module_slug: string; slug: string; name: string; sort_order: number; min_level: number };
+export type Topic = { id: string; domain_slug: string; module_slug: string; slug: string; name: string; sort_order: number; min_level: number; owner_id: string | null };
 export type TopicRow = Topic & { status: Status; subDone: number; subTotal: number; core: boolean; revision: RevisionState; bookmarked: boolean };
 export type Profile = { display_name: string | null; timezone: string; hours_per_topic: number; hours_per_day: number; interview_date: string | null };
 
@@ -18,8 +18,9 @@ export async function loadRoadmap(userId: string, level: number) {
   const [domains, modules, topics, subtopics, progress, subProgress, flags, profile, settings, bookmarks, game] = await Promise.all([
     supabase.from("domains").select("slug, name, icon, sort_order").order("sort_order"),
     supabase.from("modules").select("domain_slug, slug, name, sort_order").order("sort_order"),
-    supabase.from("topics").select("id, domain_slug, module_slug, slug, name, sort_order, min_level")
-      .is("owner_id", null).lte("min_level", level).order("sort_order"),
+    // RLS returns shared topics for the caller's levels plus only the caller's own custom topics.
+    supabase.from("topics").select("id, domain_slug, module_slug, slug, name, sort_order, min_level, owner_id")
+      .lte("min_level", level).order("sort_order"),
     supabase.from("subtopics").select("id, topic_id").range(0, 4999),
     supabase.from("topic_progress").select("topic_id, status, done_at, last_revised_at").eq("user_id", userId),
     supabase.from("subtopic_progress").select("subtopic_id").eq("user_id", userId).eq("done", true).range(0, 4999),

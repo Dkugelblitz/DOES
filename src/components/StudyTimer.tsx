@@ -51,14 +51,14 @@ export function StudyTimer({ initial, topicId = null, topicName = null }: { init
 
   const doStart = () => start(async () => { setNote(null); setSummary(null); apply(await startStudy(topicId)); });
   const doStop = (finish: boolean) => start(async () => {
-    const r = await stopStudy();
+    const r = await stopStudy(finish);
     apply(r);
     if (!r.error) {
       if (finish) setSummary(r);
       else setNote(r.saved_minutes ? `Saved ${r.saved_minutes} min. Nice focus.` : "Paused. Sessions under a minute aren't counted.");
     }
   });
-  const doSwitch = () => start(async () => { await stopStudy(); apply(await startStudy(topicId)); setNote(`Now timing ${topicName}.`); });
+  const doSwitch = () => start(async () => { await stopStudy(false); apply(await startStudy(topicId)); setNote(`Now timing ${topicName}.`); });
 
   return (
     <section className="card timer" aria-labelledby="timer-h">
@@ -81,8 +81,9 @@ export function StudyTimer({ initial, topicId = null, topicName = null }: { init
       {summary && (
         <div className="summary" role="status">
           <p style={{ marginTop: 0 }}><strong>Session complete ✅</strong></p>
-          <p>{summary.saved_minutes ? `You studied for ${summary.saved_minutes} min this time.` : "Every visit counts."} Today: <strong>{summary.today_minutes} min</strong>. Topics done so far: <strong>{summary.topics_done ?? 0}</strong>.</p>
-          <p className="muted" style={{ marginBottom: 0 }}>Rest well. Your brain keeps filing this away. <Link href="/insights">See your study patterns</Link>.</p>
+          <p>{summary.closing?.summary} Today: <strong>{summary.today_minutes} min</strong>{summary.closing?.xpToday ? <>, <strong>+{summary.closing.xpToday} XP</strong></> : null}. {summary.closing?.totals}</p>
+          <p style={{ marginBottom: 4 }}>{summary.closing?.farewell}</p>
+          <p className="muted" style={{ margin: 0 }}><Link href="/insights">See your study patterns</Link></p>
         </div>
       )}
       <p className="muted" style={{ marginBottom: 0, fontSize: "0.8rem" }}>Closing the tab saves your time automatically. Idle time while the tab is closed or your computer sleeps isn&apos;t counted.</p>

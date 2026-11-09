@@ -1,6 +1,7 @@
 "use client";
 import { useState, useTransition } from "react";
 import { setSubtopicDone, setTopicStatus, type StatusResult } from "@/app/progress-actions";
+import { toast } from "@/components/Toaster";
 
 type Sub = { id: string; name: string; done: boolean };
 
@@ -12,7 +13,7 @@ export function TopicControls({ topicId, status: initialStatus, subtopics: initi
 
   const apply = (r: StatusResult) => {
     if ("error" in r) { setError(r.error); return false; }
-    setError(null); setStatus(r.status); return true;
+    setError(null); setStatus(r.status); toast(r.celebrate); return true;
   };
 
   return (
@@ -22,7 +23,7 @@ export function TopicControls({ topicId, status: initialStatus, subtopics: initi
         <select value={status} disabled={pending} onChange={(e) => {
           const next = Number(e.target.value), prev = status;
           setStatus(next);
-          start(async () => { if (!apply(await setTopicStatus(topicId, next))) setStatus(prev); });
+          start(async () => { if (!apply(await setTopicStatus(topicId, next, prev))) setStatus(prev); });
         }} style={{ maxWidth: 240 }}>
           <option value={0}>Not started</option>
           <option value={1}>In progress</option>

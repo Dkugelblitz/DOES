@@ -14,6 +14,7 @@ Interview prep for Data Engineer, Principal Data Engineer and Data Architect lev
 - **Milestone 7 (notes and uploads): done.** Markdown notes with autosave and safe rendering, photo and PDF uploads through server-issued signed URLs (type, size and 25 MB quota checked twice, photos shrunk with thumbnails in the browser), saved links and excerpts, per-topic sharing with admins, an extractive summariser behind a swappable interface, a cross-topic summary page and "download my data".
 - **Milestone 8 (revision and bookmarks): done.** Due (5+ days) and overdue (7+) revision list on Home, a Revised action that resets the clock, roadmap tags, bookmarks with a Bookmarks page, and an hourly Netlify job that emails morning reminders in each user's timezone (opt-out on Account and a signed one-click unsubscribe).
 - **Milestone 9 (gamification): done.** XP awarded only by database triggers with idempotency keys (topic done 30 once per topic, due revision 10 once per cycle, note 5 and file 5 once per topic, 1 per study minute once per session), levels 1-7 with titles, daily streaks in the user's timezone, 13 data-driven badges, a backfill for earlier activity, and an Achievements page. Reminder emails are now opt-in.
+- **Milestone 10 (encouragement, analytics, content editor, polish): done.** Personalised greeting (time of day, name, streak, revisions due, next suggested topic), a cheer with XP, level-ups and new badges on completion, a closing message when finishing for the day, admin analytics, an admin content editor for topics, subtopics, level flags, cards, designs and all guides/settings with version history and restore, private custom topics, a light/dark/auto theme switch and a skip link.
 
 Setup from zero, on free tiers only: **[docs/SETUP.md](docs/SETUP.md)**.
 
@@ -26,6 +27,14 @@ Setup from zero, on free tiers only: **[docs/SETUP.md](docs/SETUP.md)**.
 | `scripts/` | Seed build, validate, review report, migrate and seed-to-database |
 | `content/` | YAML content seed |
 | `tests/` | Content tests, plus database security tests on a throwaway Postgres |
+
+## Editing content
+
+Admins edit everything learners see under **Admin → Content**: topics (name, module, minimum level, Pareto flags, subtopics, archive), flip cards, system designs, and the HackerRank guide, messages, gamification rules, settings, design framework and sprint intro. Every save is checked, versioned (any version can be restored, which adds a new version) and written to the audit log. Learners see changes immediately; no deploy is needed. The 2-day sprint plan's blocks are the one exception: they're still edited in `content/sprint.yaml` and loaded with `npm run db:seed -- --mode=force`.
+
+## Rate limits
+
+Admin actions, timer actions, notes, revisions, level requests and custom topics are rate-limited in the database. Sign-in and sign-up are rate-limited by Supabase Auth itself (Authentication → Rate Limits).
 
 ## How access is enforced
 

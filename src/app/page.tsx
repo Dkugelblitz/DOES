@@ -1,54 +1,67 @@
+import Link from "next/link";
 import { requireOnboarded } from "@/lib/access";
 import { createClient } from "@/lib/supabase/server";
-import Link from "next/link";
+import { greeting, localHour, type Messages } from "@/lib/messages";
 import { Nav } from "@/components/Nav";
 import { LevelSwitch } from "@/components/LevelSwitch";
 import { StudyTimer } from "@/components/StudyTimer";
-import type { StudyState } from "@/app/study/actions";
 import { RevisedButton } from "@/components/RevisedButton";
 import { GameCard, type Game } from "@/components/GameCard";
+import type { StudyState } from "@/app/study/actions";
 
-type Summary = {
-  level: number; topics: number; pareto: number; subtopics: number; cards: number; designs: number; sprint_items: number;
-  domains: { slug: string; name: string; icon: string; topics: number }[];
-};
+type Due = { topic_id: string; name: string; days: number; state: string };
+type Summary = { topics: number; pareto: number; cards: number; designs: number; sprint_items: number };
 
-// Interim home: shows what the active level's view contains.
-// The real dashboard (roadmap, progress, greeting) arrives in Milestones 4 and 10.
 export default async function Home() {
   const access = await requireOnboarded();
   const supabase = await createClient();
   await supabase.rpc("touch_activity");
-  const [{ data: levels }, { data: profile }, { count: unread }, { data: study }, { data: revision }, { data: game }] = await Promise.all([
+  const [{ data: levels }, { data: profile }, { count: unread }, { data: study }, { data: revision }, { data: game }, { data: msgs }] = await Promise.all([
     supabase.from("levels").select("level, name, icon").order("level"),
-    supabase.from("profiles").select("display_name").eq("id", access.user_id).single(),
+    supabase.from("profiles").select("display_name, timezone").eq("id", access.user_id).single(),
     supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", access.user_id).is("read_at", null),
     supabase.rpc("study_state"),
     supabase.rpc("revision_due"),
     supabase.rpc("my_game"),
+    supabase.from("content_documents").select("data").eq("key", "messages").single(),
   ]);
-  const due = ((revision as { topics: { topic_id: string; name: string; days: number; state: string }[] } | null)?.topics ?? []);
   const held = (levels ?? []).filter((l) => access.levels.includes(l.level));
   const active = held.find((l) => l.level === access.active_level) ?? held[0];
-  const { data: summary } = active
-    ? await supabase.rpc("level_summary", { p_level: active.level })
-    : { data: null };
+  const [{ data: next }, { data: summary }] = await Promise.all([
+    supabase.rpc("my_next_topic", { p_level: active.level }),
+    supabase.rpc("level_summary", { p_level: active.level }),
+  ]);
+  const due = ((revision as { topics: Due[] } | null)?.topics ?? []);
+  const g = game as Game | null;
   const s = summary as Summary | null;
+  const nextTopic = next as { topic_id: string; name: string; core: boolean } | null;
+  const hello = msgs?.data
+    ? greeting(msgs.data as Messages, {
+        name: profile?.display_name ?? null, hour: localHour(new Date(), profile?.timezone ?? "UTC"),
+        streak: g?.streak ?? 0, dueCount: due.length, nextTopic: nextTopic?.name ?? null, levelName: active.name,
+      })
+    : null;
 
   return (
-    <main>
+    <main id="main">
       <Nav current="home" isAdmin={access.is_admin} />
-      <h1>Hi{profile?.display_name ? `, ${profile.display_name.split(" ")[0]}` : ""} 👋</h1>
+      {hello && (
+        <section className="card greeting" aria-labelledby="hello-h">
+          <h1 id="hello-h" style={{ marginTop: 0 }}>{hello.headline}</h1>
+          {hello.lines.map((l) => <p key={l} style={{ margin: "4px 0" }}>{l}</p>)}
+          {nextTopic && (
+            <p style={{ margin: "10px 0 0" }}>
+              <Link className="btn primary" href={`/topics/${nextTopic.topic_id}`}>Start {nextTopic.name}</Link>
+            </p>
+          )}
+          <p className="muted" style={{ margin: "10px 0 0" }}>{hello.footer}{access.is_admin && " · Admin"}</p>
+        </section>
+      )}
       {!!unread && (
         <p className="card" role="status">🔔 You have {unread} new update{unread === 1 ? "" : "s"}. <Link href="/account">See them on your account page</Link>.</p>
       )}
-      <div className="card stack">
-        <p style={{ margin: 0 }}>You&apos;re preparing as <strong>{active?.icon} {active?.name}</strong>
-          {access.is_admin && <> · <strong>Admin</strong></>}.</p>
-        <LevelSwitch held={held} active={active?.level ?? 1} />
-        <div className="row"><Link className="btn primary" href="/roadmap">Open your roadmap</Link><Link className="btn" href="/pareto">⚡ Pareto core</Link><Link className="btn" href="/sprint/plan">2-day sprint</Link><Link className="btn" href="/bookmarks">★ Bookmarks</Link></div>
-      </div>
-      {game && <GameCard g={game as Game} />}
+      {g && <GameCard g={g} />}
+
       <section className="card" aria-labelledby="rev-h">
         <h2 id="rev-h" style={{ marginTop: 0 }}>🔁 Revision due ({due.length})</h2>
         {due.length ? (
@@ -66,26 +79,21 @@ export default async function Home() {
           </>
         ) : <p className="muted" style={{ margin: 0 }}>Nothing due. Topics you finish come back here after 5 days for a quick review.</p>}
       </section>
+
       {study && <StudyTimer initial={study as StudyState} />}
-      {s && (
-        <>
-          <h2>{active?.name} roadmap</h2>
-          <div className="card">
-            <ul style={{ margin: 0, paddingLeft: 20 }}>
-              <li><strong>{s.topics}</strong> topics with <strong>{s.subtopics}</strong> subtopics</li>
-              <li><strong>{s.pareto}</strong> Pareto core topics ({Math.round((s.pareto / Math.max(1, s.topics)) * 100)}% of the roadmap)</li>
-              <li><strong>{s.cards}</strong> flip cards, <strong>{s.designs}</strong> system designs, <strong>{s.sprint_items}</strong> sprint checklist items</li>
-            </ul>
-          </div>
-          <h2>By domain</h2>
-          <div className="card">
-            <ul style={{ margin: 0, paddingLeft: 20 }}>
-              {s.domains.map((d) => <li key={d.slug}>{d.icon} {d.name}: {d.topics} topics</li>)}
-            </ul>
-          </div>
-          
-        </>
-      )}
+
+      <section className="card stack" aria-labelledby="go-h">
+        <h2 id="go-h" style={{ margin: 0 }}>{active.icon} {active.name}</h2>
+        {s && <p className="muted" style={{ margin: 0 }}>{s.topics} topics on your roadmap, {s.pareto} of them Pareto core · {s.cards} flip cards · {s.designs} system design{s.designs === 1 ? "" : "s"} · {s.sprint_items} sprint items</p>}
+        <LevelSwitch held={held} active={active.level} />
+        <div className="row">
+          <Link className="btn primary" href="/roadmap">Roadmap</Link>
+          <Link className="btn" href="/pareto">⚡ Pareto core</Link>
+          <Link className="btn" href="/sprint/plan">2-day sprint</Link>
+          <Link className="btn" href="/bookmarks">★ Bookmarks</Link>
+          <Link className="btn" href="/notes">📚 Study summary</Link>
+        </div>
+      </section>
     </main>
   );
 }

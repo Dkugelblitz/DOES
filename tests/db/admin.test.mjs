@@ -46,6 +46,13 @@ describe("non-admins are refused on every admin function", () => {
       ["select public.admin_decide_request(1, true, null)", []],
       ["select public.admin_import_users('[{\"email\":\"x@example.com\",\"levels\":[3]}]'::jsonb)", []],
       ["select public.admin_delete_invite('x@example.com')", []],
+      ["select public.admin_analytics()", []],
+      ["select public.admin_content('topics', null)", []],
+      ["select public.admin_save_topic('{\"id\":\"databricks/acid\",\"name\":\"Hacked\"}'::jsonb)", []],
+      ["select public.admin_save_card('{\"deck\":\"x\",\"question\":\"q\",\"answer\":\"a\",\"topic_id\":\"databricks/acid\"}'::jsonb)", []],
+      ["select public.admin_save_design('{\"title\":\"x\",\"points\":[\"p\"]}'::jsonb)", []],
+      ["select public.admin_save_document('sprint_intro', '{\"intro\":\"hacked\"}'::jsonb)", []],
+      ["select public.admin_restore_version('topic', 'databricks/acid', 1)", []],
     ];
     // The test below guarantees this list covers every admin_* function in the database.
     const fns = (await q1(db, "select proname from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and proname like 'admin\\_%' order by 1")).map(r => r.proname);

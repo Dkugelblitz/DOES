@@ -9,6 +9,8 @@ import { StatusDot } from "@/components/StatusDot";
 import { BookmarkStar } from "@/components/BookmarkStar";
 import { LevelSwitch } from "@/components/LevelSwitch";
 import { StudySettings } from "./StudySettings";
+import { ActionForm } from "@/components/ActionForm";
+import { createCustomTopic } from "@/app/material/actions";
 
 export default async function RoadmapPage({ searchParams }: { searchParams: Promise<{ domain?: string }> }) {
   const access = await requireOnboarded();
@@ -97,6 +99,15 @@ export default async function RoadmapPage({ searchParams }: { searchParams: Prom
               </div>
             );
           })}
+          <details className="add-link">
+            <summary>Add your own topic to {cur.name}</summary>
+            <ActionForm action={createCustomTopic} submit="Add topic">
+              <input type="hidden" name="domain" value={cur.slug} />
+              <label>Topic name<input name="name" maxLength={160} required /></label>
+              <label>Subtopics (optional, one per line)<textarea name="subtopics" rows={3} /></label>
+              <p className="muted" style={{ margin: 0 }}>Only you can see your own topics. They count towards your progress and XP.</p>
+            </ActionForm>
+          </details>
         </section>
       )}
     </main>

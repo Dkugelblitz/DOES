@@ -10,7 +10,7 @@ import { ActionForm } from "@/components/ActionForm";
 import { CopyButton } from "@/components/CopyButton";
 import { StudyTimer } from "@/components/StudyTimer";
 import type { StudyState } from "@/app/study/actions";
-import { addLink, deleteAttachment, deleteLink, setShared } from "@/app/material/actions";
+import { addLink, deleteAttachment, deleteCustomTopic, deleteLink, setShared } from "@/app/material/actions";
 import { TopicControls } from "./TopicControls";
 import { NotesEditor } from "./NotesEditor";
 import { UploadBox } from "./UploadBox";
@@ -29,7 +29,7 @@ export default async function TopicPage({ params }: { params: Promise<{ domain: 
 
   // RLS returns nothing for topics above the caller's levels, so they get a plain 404.
   const { data: topic } = await supabase.from("topics")
-    .select("id, name, domain_slug, module_slug, min_level").eq("id", id).maybeSingle();
+    .select("id, name, domain_slug, module_slug, min_level, owner_id").eq("id", id).maybeSingle();
   if (!topic) notFound();
 
   const uid = access.user_id;
@@ -78,7 +78,7 @@ export default async function TopicPage({ params }: { params: Promise<{ domain: 
         <BookmarkStar topicId={id} topicName={topic.name} on={!!star} />
       </div>
       <div className="row">
-        <span className="tag">{levelName(topic.min_level)} and up</span>
+        {topic.owner_id ? <span className="tag">Your own topic · only you can see it</span> : <span className="tag">{levelName(topic.min_level)} and up</span>}
         {core.map((l) => <span key={l} className="tag core">Core for {levelName(l)}</span>)}
       </div>
       <div className="card">
@@ -169,6 +169,13 @@ export default async function TopicPage({ params }: { params: Promise<{ domain: 
         <p className="muted" style={{ marginBottom: 0, fontSize: "0.8rem" }}>Picked from your own notes and excerpts. <Link href="/notes">See the summary across all topics</Link>.</p>
       </section>
 
+      {topic.owner_id && (
+        <section className="card" aria-label="Delete topic">
+          <ActionForm action={deleteCustomTopic} submit="Delete this topic" confirm="Confirm: delete topic, its progress and notes" danger inline>
+            <input type="hidden" name="topic_id" value={id} />
+          </ActionForm>
+        </section>
+      )}
       <section className="card" aria-labelledby="share-h">
         <h2 id="share-h" style={{ marginTop: 0 }}>🔒 Privacy</h2>
         <p style={{ marginTop: 0 }}>{share ? "Admins can see your notes, links and files for this topic." : "Your notes, links and files are private. Admins see only your progress."}</p>

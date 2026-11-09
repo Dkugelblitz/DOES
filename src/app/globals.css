@@ -199,3 +199,18 @@ code { font-family: ui-monospace, monospace; font-size: 0.88em; }
 .ladder { list-style: none; margin: 0; padding: 0; }
 .ladder li { display: flex; justify-content: space-between; padding: 8px 10px; border-radius: 8px; }
 .ladder li.past { color: var(--mu); } .ladder li.here { background: var(--bg); border: 1px solid var(--ac); font-weight: 700; }
+
+/* ---- content editor, greeting, toasts ---- */
+pre.json, textarea.json { font: 12.5px/1.5 ui-monospace, monospace; white-space: pre; overflow: auto; max-height: 420px; }
+pre.json { background: var(--bg); border: 1px solid var(--bd); border-radius: 8px; padding: 10px; }
+.greeting { border-color: var(--ac); }
+.greeting h1 { font-size: 1.4rem; }
+.toasts { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 50; display: grid; gap: 8px; width: min(440px, calc(100% - 32px)); pointer-events: none; }
+.toast { pointer-events: auto; display: flex; align-items: center; gap: 10px; background: var(--tx); color: var(--bg); padding: 10px 14px; border-radius: 12px; box-shadow: 0 6px 24px rgba(0,0,0,.2); animation: toast-in .2s ease-out; }
+.toast span { flex: 1; } .toast-x { background: none; border: 0; color: inherit; font-size: 1.2rem; cursor: pointer; min-width: 32px; min-height: 32px; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ---- accessibility ---- */
+.skip { position: absolute; left: 8px; top: -60px; z-index: 100; background: var(--card); color: var(--tx); border: 2px solid var(--focus); border-radius: 8px; padding: 8px 12px; }
+.skip:focus { top: 8px; }
+#content:focus { outline: none; }

@@ -10,9 +10,14 @@ const LABEL: Record<string, string> = {
   bootstrap_admin: "Made admin (ADMIN_EMAILS)", grant_level: "Granted level", revoke_level: "Revoked level", change_grant_expiry: "Changed expiry",
   set_active_level: "Set default level", promote_admin: "Promoted to admin", demote_admin: "Removed admin", disable_user: "Disabled account",
   enable_user: "Enabled account", approve_request: "Approved request", deny_request: "Denied request", import_invite: "Imported invite", delete_invite: "Deleted invite",
+  content_edit: "Edited content", content_restore: "Restored content version",
 };
 
-const compact = (v: unknown) => (v == null ? "–" : JSON.stringify(v).replace(/[{}"]/g, "").replace(/,/g, ", ").replace(/:/g, ": "));
+const compact = (v: unknown) => {
+  if (v == null) return "–";
+  const s = JSON.stringify(v).replace(/[{}"]/g, "").replace(/,/g, ", ").replace(/:/g, ": ");
+  return s.length > 240 ? `${s.slice(0, 240)}… (full version in Content → Version history)` : s;
+};
 
 export default async function AdminAudit({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   await requireAdmin();
@@ -39,7 +44,7 @@ export default async function AdminAudit({ searchParams }: { searchParams: Promi
                 <td>{fmtDateTime(r.created_at)}</td>
                 <td>{email(r.actor_id) ?? <span className="muted">system</span>}</td>
                 <td>{LABEL[r.action] ?? r.action}</td>
-                <td>{r.target_user_id ? <Link href={`/admin/users/${r.target_user_id}`}>{email(r.target_user_id)}</Link> : <span className="muted">{r.entity_id ?? "–"}</span>}</td>
+                <td>{r.target_user_id ? <Link href={`/admin/users/${r.target_user_id}`}>{email(r.target_user_id)}</Link> : <span className="muted">{r.entity_type ? `${r.entity_type}: ` : ""}{r.entity_id ?? "–"}</span>}</td>
                 <td className="code">{compact(r.before)}</td>
                 <td className="code">{compact(r.after)}</td>
               </tr>

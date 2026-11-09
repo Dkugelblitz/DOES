@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 import "./globals.css";
+import { Toaster } from "@/components/Toaster";
 
 export const metadata: Metadata = {
   title: "DEOS · Data Engineering Operating System",
@@ -16,10 +18,15 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const theme = (await cookies()).get("theme")?.value;
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" data-theme={theme === "light" || theme === "dark" ? theme : undefined}>
+      <body>
+        <a href="#content" className="skip">Skip to content</a>
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }

@@ -1,6 +1,7 @@
 "use server";
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { BUCKET, DEFAULT_UPLOADS, EXT, type UploadSettings } from "@/lib/storage";
 
@@ -142,4 +143,27 @@ export async function deleteAttachment(_: FormResult, form: FormData): Promise<F
   await createServiceClient().storage.from(BUCKET).remove([row.storage_path, ...(row.thumb_path ? [row.thumb_path] : [])]);
   revalidatePath(topicPath(row.topic_id));
   return { ok: "Removed." };
+}
+
+// ---------------------------------------------------------------- custom topics (private to the user)
+export async function createCustomTopic(_: FormResult, form: FormData): Promise<FormResult> {
+  const domain = String(form.get("domain") ?? "");
+  const name = String(form.get("name") ?? "").trim();
+  const subs = String(form.get("subtopics") ?? "").split(/\r?\n/).map((s) => s.trim()).filter(Boolean).slice(0, 30);
+  if (!/^[a-z0-9-]+$/.test(domain)) return { error: "Invalid request." };
+  if (!name) return { error: "Give your topic a name." };
+  const { supabase } = await me();
+  const { error } = await supabase.rpc("create_custom_topic", { p_domain: domain, p_name: name.slice(0, 160), p_subtopics: subs });
+  if (error) return { error: /up to 50|too many|name/.test(error.message) ? error.message.charAt(0).toUpperCase() + error.message.slice(1) + "." : "Couldn't add that topic." };
+  revalidatePath("/roadmap");
+  return { ok: `Added “${name}”. Only you can see it.` };
+}
+
+export async function deleteCustomTopic(_: FormResult, form: FormData): Promise<FormResult> {
+  const id = String(form.get("topic_id") ?? "");
+  if (!TOPIC_ID.test(id)) return { error: "Invalid request." };
+  const { supabase } = await me();
+  const { error } = await supabase.rpc("delete_custom_topic", { p_id: id });
+  if (error) return { error: error.message.includes("files") ? "Remove this topic's files first." : "Couldn't delete that topic." };
+  redirect(`/roadmap?domain=${id.split("/")[0]}`);
 }

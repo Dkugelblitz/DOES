@@ -1,16 +1,21 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { celebrate } from "@/lib/celebrate";
 
 const TOPIC_ID = /^[a-z0-9-]+\/[a-z0-9-]+$/;
 
-export async function markRevised(topicId: string): Promise<{ ok: boolean; wasDue?: boolean; error?: string }> {
+export async function markRevised(topicId: string): Promise<{ ok: boolean; wasDue?: boolean; error?: string; celebrate?: string[] }> {
   if (!TOPIC_ID.test(topicId)) return { ok: false, error: "Invalid topic." };
   const supabase = await createClient();
+  const before = (await supabase.rpc("my_game")).data as { xp: number; badges: { id: string; earned_at: string | null }[] } | null;
   const { data, error } = await supabase.rpc("mark_revised", { p_topic_id: topicId });
   if (error) return { ok: false, error: error.message.includes("done before") ? "Mark the topic done first." : "Couldn't save that. Please try again." };
   revalidatePath("/", "layout");
-  return { ok: true, wasDue: (data as { was_due: boolean }).was_due };
+  const after = (await supabase.rpc("my_game")).data as { xp: number; badges: { id: string; name: string; icon: string; earned_at: string | null }[] } | null;
+  const had = new Set(before?.badges.filter((b) => b.earned_at).map((b) => b.id));
+  const delta = before && after ? { xp_before: before.xp, xp_after: after.xp, new_badges: after.badges.filter((b) => b.earned_at && !had.has(b.id)) } : undefined;
+  return { ok: true, wasDue: (data as { was_due: boolean }).was_due, celebrate: await celebrate(delta, { lead: "Revised, nicely done." }) };
 }
 
 export async function setBookmark(topicId: string, on: boolean): Promise<{ ok: boolean }> {

@@ -1,19 +1,22 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { celebrate, type GameDelta } from "@/lib/celebrate";
 
-export type StatusResult = { status: number; subtopics_done?: number; subtopics_total?: number } | { error: string };
+export type StatusResult = { status: number; subtopics_done?: number; subtopics_total?: number; celebrate?: string[] } | { error: string };
 
 const TOPIC_ID = /^[a-z0-9-]+\/[a-z0-9-]+$/;
 const SUBTOPIC_ID = /^[a-z0-9-]+\/[a-z0-9-]+#[a-z0-9-]+$/;
 
-export async function setTopicStatus(topicId: string, status: number): Promise<StatusResult> {
+// `prevStatus` lets us cheer on every completion (not only the first, which is the one with XP).
+export async function setTopicStatus(topicId: string, status: number, prevStatus?: number): Promise<StatusResult> {
   if (!TOPIC_ID.test(topicId) || ![0, 1, 2].includes(status)) return { error: "Invalid request." };
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("set_topic_status", { p_topic_id: topicId, p_status: status });
   if (error) return { error: "Couldn't save that. Please try again." };
   revalidatePath("/", "layout");
-  return data as StatusResult;
+  const r = data as { status: number; game?: GameDelta };
+  return { status: r.status, celebrate: await celebrate(r.game, { cheer: r.status === 2 && prevStatus !== 2 }) };
 }
 
 export async function setSubtopicDone(subtopicId: string, done: boolean): Promise<StatusResult> {
@@ -22,7 +25,9 @@ export async function setSubtopicDone(subtopicId: string, done: boolean): Promis
   const { data, error } = await supabase.rpc("set_subtopic_done", { p_subtopic_id: subtopicId, p_done: done });
   if (error) return { error: "Couldn't save that. Please try again." };
   revalidatePath("/", "layout");
-  return data as StatusResult;
+  const r = data as { status: number; subtopics_done: number; subtopics_total: number; game?: GameDelta };
+  const completed = done && r.subtopics_done === r.subtopics_total && r.status === 2;
+  return { status: r.status, subtopics_done: r.subtopics_done, subtopics_total: r.subtopics_total, celebrate: await celebrate(r.game, { cheer: completed }) };
 }
 
 export type SettingsState = { error?: string; saved?: boolean };
